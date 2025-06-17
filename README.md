@@ -1,2 +1,1 @@
-# quickhire
-# shahid
+# shahid -> translated videos

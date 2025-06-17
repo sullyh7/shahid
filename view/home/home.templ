@@ -1,0 +1,59 @@
+package home
+
+import "github.com/sullyh7/shahid/internal/store"
+import "github.com/sullyh7/shahid/view/components"
+import "github.com/sullyh7/shahid/view/layout"
+
+templ BrowsePage(videos []store.Video) {
+	@layout.Layout("Test") {
+		@components.Nav("")
+		<section class="max-w-7xl mx-auto px-4 py-8">
+			<h1 class="text-4xl font-bold mb-8">Browse Content</h1>
+			<!-- Filters -->
+			<div class="flex flex-wrap gap-4 mb-8">
+				<select class="bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+					<option>All Genres</option>
+					<option>Action</option>
+					<option>Comedy</option>
+					<option>Drama</option>
+				</select>
+				<select class="bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+					<option>All Years</option>
+					<option>2024</option>
+					<option>2023</option>
+					<option>2022</option>
+				</select>
+				<select class="bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+					<option>All Types</option>
+					<option>Movies</option>
+					<option>TV Shows</option>
+				</select>
+				<select class="bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+					<option>Sort by: Featured</option>
+					<option>Sort by: Rating</option>
+				</select>
+			</div>
+			<!-- Content Grid -->
+			<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+				for i, v := range videos {
+					<p>{ i }</p>
+					<p>{ v.ChannelID }</p>
+				}
+			</div>
+			<!-- Pagination -->
+			<div class="flex justify-center mt-12">
+				<div class="flex space-x-2">
+					<button class="px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition">
+						<i class="fas fa-chevron-left"></i>
+					</button>
+					<button class="px-4 py-2 bg-red-600 text-white rounded-lg">1</button>
+					<button class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition">2</button>
+					<button class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition">3</button>
+					<button class="px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition">
+						<i class="fas fa-chevron-right"></i>
+					</button>
+				</div>
+			</div>
+		</section>
+	}
+}
