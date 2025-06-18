@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"sync"
+
+	"go.uber.org/zap"
 )
 
 type Queue interface {
@@ -12,21 +14,19 @@ type Queue interface {
 }
 
 type Job struct {
-	VideoID   string
-	ChannelID string
-	Title     string
+	VideoID string
 }
 
 type WorkerPool struct {
 	JobChan chan Job
 	Size    int
 	WG      sync.WaitGroup
-	Process func(Job)
+	Process func(context.Context, Job) error
+	Logger  *zap.SugaredLogger
 }
 
 func (wp *WorkerPool) Start(ctx context.Context) {
 	for i := 0; i < wp.Size; i++ {
-
 		wp.WG.Add(1)
 		go wp.worker(ctx, wp.JobChan)
 	}
@@ -58,7 +58,7 @@ func (wp *WorkerPool) worker(ctx context.Context, jobChan <-chan Job) {
 			return
 
 		case job := <-jobChan:
-			wp.Process(job)
+			wp.Process(ctx, job)
 			if ctx.Err() != nil {
 				return
 			}

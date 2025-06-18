@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"errors"
 	"time"
+
+	"github.com/lib/pq"
 )
 
 var (
@@ -14,14 +16,14 @@ var (
 )
 
 type Storage struct {
-	Users interface {
-		Create() error
+	Videos interface {
+		Create(context.Context, *Video) error
 	}
 }
 
 func NewStorage(db *sql.DB) Storage {
 	return Storage{
-		Users: &UserStore{db},
+		Videos: &VideoStore{db},
 	}
 }
 
@@ -35,4 +37,11 @@ func withTx(db *sql.DB, ctx context.Context, fn func(*sql.Tx) error) error {
 		return err
 	}
 	return tx.Commit()
+}
+
+func isUniqueViolation(err error) bool {
+	if err, ok := err.(*pq.Error); ok {
+		return err.Code == "23505"
+	}
+	return false
 }

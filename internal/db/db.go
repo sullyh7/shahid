@@ -10,8 +10,7 @@ import (
 
 func New(addr string, maxOpenConns, maxIdleConns int, maxIdleTime string) (*sql.DB, error) {
 	db, err := sql.Open("postgres", addr)
-	// TODO dont need a DB right now
-	return nil, nil
+
 	if err != nil {
 		return nil, err
 	}

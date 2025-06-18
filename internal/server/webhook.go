@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/sullyh7/shahid/internal/store"
 	"github.com/sullyh7/shahid/internal/worker"
 )
 
@@ -23,26 +24,39 @@ func (s *Server) WebhookCallback(w http.ResponseWriter, r *http.Request) {
 	var feed Feed
 	if err := xml.NewDecoder(r.Body).Decode(&feed); err != nil {
 		s.BadRequest(w, r, err)
-		http.Error(w, "Invalid XML", http.StatusBadRequest)
 		return
 	}
 	defer r.Body.Close()
 
 	if feed.Entry.VideoID == "" {
-		s.NotFound(w, r, fmt.Errorf("video ID not found in feed"))
+		s.BadRequest(w, r, fmt.Errorf("video ID not found in feed"))
 		return
 	}
 	if feed.Entry.ChannelID == "" {
-		s.NotFound(w, r, fmt.Errorf("channel ID not found in feed"))
+		s.BadRequest(w, r, fmt.Errorf("channel ID not found in feed"))
+		return
+	}
+
+	if feed.Entry.Title == "" {
+		s.BadRequest(w, r, fmt.Errorf("no title to video"))
 		return
 	}
 	s.Logger.Infof("Received webhook for video ID: %s, Channel ID: %s", feed.Entry.VideoID, feed.Entry.ChannelID)
+
+	video := &store.Video{
+		ID:     feed.Entry.VideoID,
+		Status: "processing",
+	}
+
+	if err := s.Store.Videos.Create(r.Context(), video); err != nil {
+		s.InternalServerError(w, r, err)
+		return
+	}
+
 	if err := s.Queue.Add(worker.Job{
-		VideoID:   feed.Entry.VideoID,
-		ChannelID: feed.Entry.ChannelID,
-		Title:     feed.Entry.Title,
+		VideoID: feed.Entry.VideoID,
 	}); err != nil {
-		s.Logger.Warnw("error adding new job to queue")
+		s.InternalServerError(w, r, err)
 	}
 	w.WriteHeader(http.StatusNoContent)
 }
